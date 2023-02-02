@@ -1,7 +1,21 @@
 import EccCore
+import time
 
-applyBruteForce = True
-applyKeyExchange = True
+def textToInt(text):
+	encoded_text = text.encode('utf-8')
+	hex_text = encoded_text.hex()
+	int_text = int(hex_text, 16)
+	return int_text
+
+def intToText(int_text):
+	import codecs
+	hex_text = hex(int_text)
+	hex_text = hex_text[2:] #remove 0x
+	return codecs.decode(codecs.decode(hex_text,'hex'),'ascii')
+
+
+applyBruteForce = False
+applyKeyExchange = False
 applyDigitalSignature = True
 applySymmetricEncryption = True
 applyOrderOfGroup = False
@@ -33,7 +47,7 @@ else:
 	y0 = 24
 
 print("---------------------")
-print("initial configuration")
+print("Initial configuration")
 print("---------------------")
 print("Curve: y^2 = x^3 + ",a,"*x + ",b, " mod ", mod," , #F(",mod,") = ", order)
 print("Base point: (",x0,", ",y0,")")
@@ -73,6 +87,8 @@ if applyKeyExchange == True:
 	print("Elliptic Curve Diffie Hellman Key Exchange")
 	print("------------------------------------------")
 
+	start_time = time.time()
+
 	alicePrivate = 2010000000000017
 	alicePublicX, alicePublicY = EccCore.applyDoubleAndAddMethod(x0, y0, alicePrivate, a, b, mod)
 	print("alice public key: (",alicePublicX,", ", alicePublicY,")")
@@ -89,6 +105,8 @@ if applyKeyExchange == True:
 	bobSharedX, bobSharedY = EccCore.applyDoubleAndAddMethod(alicePublicX, alicePublicY, bobPrivate, a, b, mod)
 	print("bob shared key: (",bobSharedX,", ", bobSharedY,")")
 
+	end_time = time.time()
+	print('total time taken: {} (seconds)'.format(end_time - start_time))
 #------------------------------------
 #digital signature
 
@@ -98,7 +116,9 @@ if applyDigitalSignature == True:
 	print("Elliptic Curve Digital Signature Algorithm")
 	print("------------------------------------------")
 	
-	message = b"ECC beats RSA"
+	message = b"Ngo Thi Mai Ly - 21C11014"
+
+	start_time = time.time()
 
 	import hashlib
 
@@ -108,16 +128,19 @@ if applyDigitalSignature == True:
 	print("message: ", message)
 	print("hash: ", hash)
 
-	privateKey = 75263518707598184987916378021939673586055614731957507592904438851787542395619
+	# import random
+	# privateKey = random.getrandbits(256) #32 byte secret key
+
+	privateKey = 51593096464285145885950316111141236823187319404180158951714772261245525337045
 
 	publicKeyX, publicKeyY = EccCore.applyDoubleAndAddMethod(x0, y0, privateKey, a, b, mod)
 
 	print("public key: ",publicKeyX, ", ", publicKeyY)
 
-	randomKey = 28695618543805844332113829720373285210420739438570883203839696518176414791234
-	"""import random
-	randomKey = random.getrandbits(128)"""
-	#print("random key: ", randomKey)
+	# import random
+	# randomKey = random.getrandbits(128)
+	# print("random key: ", randomKey)
+	randomKey = 27108379813230200991399606648638420817680374902224885321944488119274900025117
 
 	randomPointX, randomPointY = EccCore.applyDoubleAndAddMethod(x0, y0, randomKey, a, b, mod)
 	print("random point: (", randomPointX,", ",randomPointY)
@@ -154,7 +177,9 @@ if applyDigitalSignature == True:
 		print("signature is valid...")
 	else:
 		print("invalid signature detected!!!")
-	
+
+	end_time = time.time()
+	print('total time taken: {} (seconds)'.format(end_time - start_time))
 #------------------------------------
 #symmetric encryption
 
@@ -163,13 +188,19 @@ if applySymmetricEncryption == True:
 	print("Elliptic Curve ElGamal Cryptosystem")
 	print("------------------------------------------")
 
-	#1000P
-	plaintextX = 33614996735103061868086131503312627786077049888376966084542785773152043381677
-	plaintextY = 84557594361191031609962062080128931200952163654712344162477769532776951195137
+	start_time = time.time()
+	
+	message = 'Ngo Thi Mai Ly - 21C11014'
+	print("message:", message)
+
+	plaintext = textToInt(message)
+	plaintextX, plaintextY = EccCore.applyDoubleAndAddMethod(x0, y0, plaintext, a, b, mod)
 
 	print("plaintext: (",plaintextX,", ",plaintextY,")")
 
-	secretKey = 75263518707598184987916378021939673586055614731957507592904438851787542395619
+	# import random
+	# secretKey = random.getrandbits(256) #32 byte secret key
+	secretKey = 51593096464285145885950316111141236823187319404180158951714772261245525337045
 
 	publicKeyX, publicKeyY = EccCore.applyDoubleAndAddMethod(x0, y0, secretKey, a, b, mod)
 
@@ -177,7 +208,7 @@ if applySymmetricEncryption == True:
 
 	#encryption
 
-	randomKey = 28695618543805844332113829720373285210420739438570883203839696518176414791234
+	randomKey = 27108379813230200991399606648638420817680374902224885321944488119274900025117
 	"""import random
 	randomKey = random.getrandbits(128)"""
 
@@ -202,6 +233,8 @@ if applySymmetricEncryption == True:
 	decrypted = EccCore.pointAddition(c2x, c2y, dx, dy, a, b, mod)
 	print("decrypted: ",decrypted,"")
 	
+	end_time = time.time()
+	print('total time taken: {} (seconds)'.format(end_time - start_time))
 #------------------------------------
 
 if applyOrderOfGroup == True:
